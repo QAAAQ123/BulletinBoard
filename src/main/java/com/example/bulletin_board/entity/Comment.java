@@ -1,10 +1,12 @@
 package com.example.bulletin_board.entity;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.ToString;
 
 @Entity
 @ToString
+@AllArgsConstructor
 @Table(name = "comment")
 public class Comment {
     @Id
@@ -12,8 +14,12 @@ public class Comment {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long commentId;
 
-    @Column
-    private String comment_content;
-    @Column
-    private String comment_updated_at;
+    @ManyToOne
+    @JoinColumn(name = "post_id")
+    private Post postId;
+
+    @Column(name = "comment_content")
+    private String commentContent;
+    @Column(name = "comment_updated_at")
+    private String commentUpdatedAt;
 }

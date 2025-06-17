@@ -1,21 +1,25 @@
 package com.example.bulletin_board.service;
 
 import com.example.bulletin_board.dto.PostDto;
+import com.example.bulletin_board.entity.Comment;
 import com.example.bulletin_board.entity.Post;
+import com.example.bulletin_board.repository.CommentRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import com.example.bulletin_board.repository.PostRepository;
-import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
-@Service
+@org.springframework.stereotype.Service
 @Slf4j
-public class PostService {
+public class Service {
     @Autowired
     private PostRepository postRepository;
+
+    @Autowired
+    private CommentRepository commentRepository;
 
     public List<PostDto> showPosts() {
         List<Post> postList =  postRepository.findAll();
@@ -47,5 +51,16 @@ public class PostService {
 
     public void deletePost(Long postId) {
         postRepository.deleteById(postId);
+    }
+
+    public PostDto showPost(Long postId) {
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new EntityNotFoundException("Entity not found with postId"));
+        List<Comment> commentList = commentRepository.findByPost_PostId(postId);
+        log.info("read post and comment(postId:{})",postId);
+
+        post.addCommentList(commentList);
+        System.out.println(post.toDto().getCommentList());
+        return post.toDto();
     }
 }

@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 
 import java.text.SimpleDateFormat;
+import java.util.List;
 
 @Entity
 @ToString
@@ -25,11 +26,16 @@ public class Post {
     private String title;
     @Column
     private String content;
-    @Column
+    @Column(name = "update_at")
     private String update_at;
 
+    @OneToMany
+    @JoinColumn
+    private List<Comment> commentList;
+
+
     public PostDto toDto() {
-        return new PostDto(postId,title,content,update_at);
+        return new PostDto(postId,title,content,update_at,commentList);
     }
 
     public void mergeData(Post post) {

@@ -16,7 +16,7 @@ public class Comment {
 
     @ManyToOne
     @JoinColumn(name = "post_id")
-    private Post postId;
+    private Post post;
 
     @Column(name = "comment_content")
     private String commentContent;

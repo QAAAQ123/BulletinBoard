@@ -1,7 +1,8 @@
 package com.example.bulletin_board.dto;
 
+import com.example.bulletin_board.entity.Comment;
+import com.example.bulletin_board.entity.Post;
 import lombok.*;
-import org.springframework.stereotype.Service;
 
 @NoArgsConstructor
 @AllArgsConstructor
@@ -11,6 +12,10 @@ import org.springframework.stereotype.Service;
 public class CommentDto {
     private Long commentId;
     private Long postId;
-    private String commentContnet;
+    private String commentContent;
     private String commentUpdatedAt;
+
+    public Comment toEntity(Post post) {
+        return new Comment(this.commentId,post,this.commentContent,this.commentUpdatedAt);
+    }
 }

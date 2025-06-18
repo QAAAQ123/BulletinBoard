@@ -37,7 +37,7 @@ public class PostController {
     //Create post
     @Transactional
     @PostMapping("/")
-    public ResponseEntity<PostDto>  createPost(@RequestBody PostDto postDto){
+    public ResponseEntity<PostDto> createPost(@RequestBody PostDto postDto){
         log.info("'post' post request");
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(service.createPost(postDto));
@@ -47,7 +47,7 @@ public class PostController {
     @Transactional
     @PutMapping("/{postId}") //patch를 지원하지 않아서 put으로 변경함
     public ResponseEntity<PostDto> updatePost(@RequestBody PostDto postDto,@PathVariable Long postId){
-        log.info("post id:" + postId + " patch request");
+        log.info("post id:" + postId + " put request");
         PostDto updatedDto = service.updatePost(postDto,postId);
         return (updatedDto != null) ?
                 ResponseEntity.status(HttpStatus.OK).body(updatedDto):
@@ -60,6 +60,8 @@ public class PostController {
         service.deletePost(postId);
         return ResponseEntity.status(HttpStatus.OK).build();
     }
+
+
 
 
 }

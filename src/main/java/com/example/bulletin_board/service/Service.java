@@ -1,5 +1,6 @@
 package com.example.bulletin_board.service;
 
+import com.example.bulletin_board.dto.CommentDto;
 import com.example.bulletin_board.dto.PostDto;
 import com.example.bulletin_board.entity.Comment;
 import com.example.bulletin_board.entity.Post;
@@ -33,7 +34,7 @@ public class Service {
     public PostDto createPost(PostDto postDto) {
         Post post = postDto.toEntity();
         Post createTarget= postRepository.save(post);
-        log.info("created post\ntitle: "+post.getTitle()+"\ncontent: "+post.getContent()+"\nupdated at: "+post.getUpdate_at());
+        log.info("created post\ntitle: "+post.getTitle()+"\ncontent: "+post.getContent()+"\nupdated at: "+post.getUpdateAt());
         return createTarget.toDto();
     }
 
@@ -45,7 +46,7 @@ public class Service {
                 .orElseThrow(() -> new EntityNotFoundException("Entity not found with postId"));
         updateTarget.mergeData(post);
         Post changedPost = postRepository.save(updateTarget);
-        log.info("updated post\ntitle: "+updateTarget.getTitle()+"\ncontent: "+updateTarget.getContent()+"\nupdated at: "+updateTarget.getUpdate_at());
+        log.info("updated post\ntitle: "+updateTarget.getTitle()+"\ncontent: "+updateTarget.getContent()+"\nupdated at: "+updateTarget.getUpdateAt());
         return changedPost.toDto();
     }
 
@@ -60,7 +61,34 @@ public class Service {
         log.info("read post and comment(postId:{})",postId);
 
         post.addCommentList(commentList);
-        System.out.println(post.toDto().getCommentList());
         return post.toDto();
     }
+
+    public CommentDto updateComment(CommentDto commentDto, Long commentId) {
+        log.info("requested comment content:{}, updated at:{}", commentDto.getCommentContent(), commentDto.getCommentUpdatedAt());
+        if (!commentDto.getCommentId().equals(commentId))
+            return null;
+        Comment target = commentRepository.findById(commentId)
+                .orElseThrow(() -> new EntityNotFoundException("Entity not found"));
+        Post post = target.getPost();
+        Comment comment = commentDto.toEntity(post);
+        target.mergeCommentData(comment);
+        Comment changedComment = commentRepository.save(target);
+        log.info("updated comment\ncontent: {}\nupdated at: {}", changedComment.getCommentContent(), changedComment.getCommentUpdatedAt());
+        return changedComment.toDto();
+    }
+
+    public CommentDto createComment(CommentDto commentDto,Long postId){
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new EntityNotFoundException("entity not found"));
+        Comment comment = commentDto.toEntity(post);
+        log.info("created comment\ncontent: {}\nupdated at: {}",comment.getCommentContent(),comment.getCommentUpdatedAt());
+        Comment createdComment = commentRepository.save(comment);
+        return createdComment.toDto();
+    }
+
+    public void deleteComment(Long commnetId){
+        commentRepository.deleteById(commnetId);
+    }
+
 }

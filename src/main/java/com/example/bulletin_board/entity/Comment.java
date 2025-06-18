@@ -1,5 +1,6 @@
 package com.example.bulletin_board.entity;
 
+import com.example.bulletin_board.dto.CommentDto;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
@@ -33,4 +34,14 @@ public class Comment {
     private String commentContent;
     @Column(name = "comment_updated_at")
     private String commentUpdatedAt;
+
+    public void mergeCommentData(Comment comment) {
+        if(comment.commentContent != null) this.commentContent = comment.commentContent;
+        if(comment.commentUpdatedAt != null) this.commentUpdatedAt = comment.commentUpdatedAt;
+    }
+
+    public CommentDto toDto() {
+        return new CommentDto(this.commentId,this.post.getPostId(),this.commentContent,this.commentUpdatedAt);
+    }
+
 }

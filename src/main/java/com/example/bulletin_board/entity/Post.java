@@ -30,19 +30,19 @@ public class Post {
     @Column
     private String content;
     @Column(name = "update_at")
-    private String update_at;
+    private String updateAt;
 
     @OneToMany(mappedBy = "post", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Comment> commentList = new ArrayList<>();
 
     public PostDto toDto() {
-        return new PostDto(postId, title, content, update_at, commentList);
+        return new PostDto(postId, title, content, updateAt, commentList);
     }
 
     public void mergeData(Post post) {
         if (post.title != null) this.title = post.title;
         if (post.content != null) this.content = post.content;
-        this.update_at = post.update_at;
+        this.updateAt = post.updateAt;
     }
 
     public void addCommentList(List<Comment> comments) {

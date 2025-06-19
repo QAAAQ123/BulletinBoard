@@ -13,13 +13,14 @@ import java.util.List;
 
 @RestController
 @Slf4j
+@RequestMapping("/main")
 public class PostController {
 
     @Autowired
     private Service service;
 
     //Show posts
-    @GetMapping("/")
+    @GetMapping
     public ResponseEntity<List<PostDto>> showPosts(){
         log.info("posts get request");
         return ResponseEntity.status(HttpStatus.OK)
@@ -36,7 +37,7 @@ public class PostController {
 
     //Create post
     @Transactional
-    @PostMapping("/")
+    @PostMapping
     public ResponseEntity<PostDto> createPost(@RequestBody PostDto postDto){
         log.info("'post' post request");
         return ResponseEntity.status(HttpStatus.CREATED)

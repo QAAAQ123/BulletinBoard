@@ -1,43 +1,43 @@
 header {
     text-align: center;
     font-size: 70px;
-    color : green;
-    margin-top : 35px;
+    color: green;
+    margin-top: 35px;
 }
 
-article{
-    padding-top:50px;
+article {
+    padding-top: 50px;
 }
 
 #post {
-    margin-left : 100px;
+    margin-left: 100px;
     text-align: center;
     font-size: 25px;
 }
 
-.post-item{
-    display:flex;
+.post-item {
+    display: flex;
     align-items: center;
     gap: 10px;
     justify-content: center;
     margin: 10px 0;
 }
 
-.post-title{
-    flex-grow:1;
+.post-title {
+    flex-grow: 1;
 }
 
-.edit-button{
+.edit-button {
     padding: 5px 10px;
     cursor: pointer;
     border-radius: 10px;
-    background-color:rgb(143, 249, 143);  
+    background-color: rgb(143, 249, 143);
 }
 
-#createBtn{
-    position:relative;
+#createBtn {
+    position: relative;
     left: 50px;
-    font-size:large;
+    font-size: large;
     size: 15px;
     border-radius: 10px;
 }

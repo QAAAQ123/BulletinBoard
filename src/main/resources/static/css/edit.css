@@ -1,0 +1,18 @@
+.label-textarea {
+    position: relative;
+    display: inline-block;
+}
+
+.label-textarea label {
+    position: absolute;
+    top: 8px;
+    left: 10px;
+    font-size: 15px;
+    pointer-events: none;
+}
+
+#content {
+    margin-top: 30px;
+    padding: 20px 10px 10px 10px;
+    box-sizing: border-box;
+}

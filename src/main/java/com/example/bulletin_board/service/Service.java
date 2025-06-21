@@ -51,6 +51,7 @@ public class Service {
     }
 
     public void deletePost(Long postId) {
+        log.info("delete post (postId:{})",postId);
         postRepository.deleteById(postId);
     }
 

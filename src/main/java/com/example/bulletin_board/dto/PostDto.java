@@ -13,10 +13,10 @@ public class PostDto {
     private Long postId;
     private String title;
     private String content;
-    private String update_at;
+    private String updateAt;
     private List<Comment> commentList;
 
     public Post toEntity() {
-        return new Post(postId,title,content,update_at, commentList);
+        return new Post(postId,title,content, updateAt, commentList);
     }
 }

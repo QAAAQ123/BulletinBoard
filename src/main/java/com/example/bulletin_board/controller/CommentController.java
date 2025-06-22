@@ -31,7 +31,7 @@ public class CommentController {
     }
 
     //create comment
-    @PostMapping("{postId}")
+    @PostMapping("/{postId}")
     public ResponseEntity<CommentDto> createComment(@RequestBody CommentDto commentDto,@PathVariable Long postId){
         log.info("new comment create request(post id:{})",postId);
         return ResponseEntity.status(HttpStatus.CREATED)

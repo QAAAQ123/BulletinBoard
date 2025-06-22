@@ -16,7 +16,7 @@ function loadPosts() {
                 let individualPost = post.postId;
 
                 title.textContent = post.title;
-                title.href = "http://localhost:8000/main/" + individualPost;
+                title.href = `http://localhost:8000/indiPost.html?postId=${individualPost}`;
                 editBtn.textContent = "수정";
                 editBtn.type = "button";
                 deletBtn.textContent = "삭제";
@@ -26,7 +26,8 @@ function loadPosts() {
                     window.location.href = `http://localhost:8000/edit.html?postId=${individualPost}`;
                 });
 
-                deletBtn.addEventListener("click", () => deletPost(individualPost));
+                deletBtn.addEventListener("click", 
+                    () => deletPost(individualPost));
 
                 li.classList.add("post-item");
                 title.classList.add("post-title");

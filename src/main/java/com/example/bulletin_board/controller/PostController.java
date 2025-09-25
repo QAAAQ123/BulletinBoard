@@ -13,7 +13,7 @@ import java.util.List;
 
 @RestController
 @Slf4j
-@RequestMapping("/main")
+@RequestMapping("/api")
 public class PostController {
 
     final private Service service;
@@ -24,15 +24,15 @@ public class PostController {
     }
 
     //Show posts
-    @GetMapping
+    @GetMapping("/posts")
     public ResponseEntity<List<PostDto>> showPosts(){
         log.info("posts get request");
         return ResponseEntity.status(HttpStatus.OK)
                 .body(service.showPosts());
     }
 
-    //Show post and comments
-    @GetMapping("/{postId}")
+    //Show post and commentsg
+    @GetMapping("/posts/{postId}")
     public ResponseEntity<PostDto> showPost(@PathVariable Long postId){
         log.info("post and comments get request");
         return ResponseEntity.status(HttpStatus.OK)
@@ -41,7 +41,7 @@ public class PostController {
 
     //Create post
     @Transactional
-    @PostMapping
+    @PostMapping("/posts")
     public ResponseEntity<PostDto> createPost(@RequestBody PostDto postDto){
         log.info("'post' post request");
         return ResponseEntity.status(HttpStatus.CREATED)
@@ -50,7 +50,7 @@ public class PostController {
 
     //Update post
     @Transactional
-    @PutMapping("/{postId}") //patch를 지원하지 않아서 put으로 변경함
+    @PutMapping("/posts/{postId}") //patch를 지원하지 않아서 put으로 변경함
     public ResponseEntity<PostDto> updatePost(@RequestBody PostDto postDto,@PathVariable Long postId){
         log.info("post id:{} put request", postId);
         PostDto updatedDto = service.updatePost(postDto,postId);
@@ -60,7 +60,7 @@ public class PostController {
     }
 
     @Transactional
-    @DeleteMapping("/{postId}")
+    @DeleteMapping("posts/{postId}")
     public ResponseEntity deletePost(@PathVariable Long postId){
         log.info("post id:" + postId + " delete request");
         service.deletePost(postId);

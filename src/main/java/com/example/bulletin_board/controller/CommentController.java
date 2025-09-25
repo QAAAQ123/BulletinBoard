@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @Slf4j
-@RequestMapping("/main")
+@RequestMapping("/api/posts")
 public class CommentController {
 
     final private Service service;
@@ -25,7 +25,7 @@ public class CommentController {
     }
 
     //update comment
-    @PutMapping("/{postId}/{commentId}")
+    @PutMapping("/{postId}/comments/{commentId}")
     public ResponseEntity<CommentDto> updateComment(@RequestBody CommentDto commentDto ,@PathVariable Long commentId){
             log.info("comment id:" + commentId + " put request");
             CommentDto updatedDto = service.updateComment(commentDto,commentId);
@@ -35,7 +35,7 @@ public class CommentController {
     }
 
     //create comment
-    @PostMapping("/{postId}")
+    @PostMapping("/{postId}/comments")
     public ResponseEntity<CommentDto> createComment(@RequestBody CommentDto commentDto,@PathVariable Long postId){
         log.info("new comment create request(post id:{})",postId);
         return ResponseEntity.status(HttpStatus.CREATED)
@@ -45,7 +45,7 @@ public class CommentController {
 
     //delete comment
     @Transactional
-    @DeleteMapping("/{postId}/{commentId}")
+    @DeleteMapping("/{postId}/comments/{commentId}")
     public ResponseEntity deleteComment(@PathVariable Long commentId){
         log.info("comment id: {} delete request");
         service.deleteComment(commentId);

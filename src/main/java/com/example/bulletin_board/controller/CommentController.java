@@ -17,8 +17,12 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/main")
 public class CommentController {
 
+    final private Service service;
+
     @Autowired
-    Service service;
+    public CommentController(Service service){
+        this.service = service;
+    }
 
     //update comment
     @PutMapping("/{postId}/{commentId}")

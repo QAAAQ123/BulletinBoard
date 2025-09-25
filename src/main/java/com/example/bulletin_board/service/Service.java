@@ -16,11 +16,15 @@ import java.util.stream.Collectors;
 @org.springframework.stereotype.Service
 @Slf4j
 public class Service {
-    @Autowired
-    private PostRepository postRepository;
+
+    final private PostRepository postRepository;
+    final private CommentRepository commentRepository;
 
     @Autowired
-    private CommentRepository commentRepository;
+    public Service(PostRepository postRepository,CommentRepository commentRepository){
+        this.postRepository = postRepository;
+        this.commentRepository = commentRepository;
+    }
 
     public List<PostDto> showPosts() {
         List<Post> postList =  postRepository.findAll();

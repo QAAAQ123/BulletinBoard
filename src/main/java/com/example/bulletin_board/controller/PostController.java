@@ -16,8 +16,12 @@ import java.util.List;
 @RequestMapping("/main")
 public class PostController {
 
+    final private Service service;
+
     @Autowired
-    private Service service;
+    public PostController(Service service){
+        this.service = service;
+    }
 
     //Show posts
     @GetMapping

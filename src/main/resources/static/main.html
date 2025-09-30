@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>게시판</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* 추가적인 커스텀 스타일 */
+        .post-item:hover {
+            background-color: #f0f4f8; /* Light blue-gray on hover */
+        }
+        .form-section {
+            display: none; /* Initially hide form sections */
+        }
+        .active {
+            display: block !important;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 font-sans">
+
+<div class="container mx-auto p-4 sm:p-6 lg:p-8">
+    <header class="mb-8">
+        <h1 class="text-4xl font-bold text-gray-800 text-center">익명 게시판</h1>
+    </header>
+
+    <main class="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <!-- 게시글 목록 섹션 -->
+        <section class="md:col-span-1 bg-white p-6 rounded-lg shadow-md">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-2xl font-semibold text-gray-700">게시글 목록</h2>
+                <button id="new-post-btn" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-md transition duration-300">새 글 작성</button>
+            </div>
+            <ul id="post-list" class="space-y-2">
+                <!-- 게시글 목록이 여기에 동적으로 추가됩니다 -->
+                <li class="text-gray-500">게시글을 불러오는 중...</li>
+            </ul>
+        </section>
+
+        <!-- 게시글 상세 및 폼 섹션 -->
+        <section id="content-section" class="md:col-span-2">
+            <!-- 초기 안내 메시지 -->
+            <div id="welcome-message" class="bg-white p-8 rounded-lg shadow-md text-center">
+                <h3 class="text-xl font-semibold text-gray-700">게시판에 오신 것을 환영합니다.</h3>
+                <p class="text-gray-500 mt-2">왼쪽 목록에서 게시글을 선택하거나 '새 글 작성' 버튼을 눌러주세요.</p>
+            </div>
+
+            <!-- 게시글 상세 보기 -->
+            <div id="post-detail-section" class="bg-white p-8 rounded-lg shadow-md" style="display: none;">
+                <div class="flex justify-between items-start mb-4">
+                    <div>
+                        <h3 id="post-title" class="text-3xl font-bold text-gray-800"></h3>
+                        <p id="post-meta" class="text-sm text-gray-500 mt-1"></p>
+                    </div>
+                    <div class="flex space-x-2">
+                        <button id="edit-post-btn" class="bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-3 rounded-md transition duration-300">수정</button>
+                        <button id="delete-post-btn" class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-3 rounded-md transition duration-300">삭제</button>
+                    </div>
+                </div>
+                <div id="post-content" class="text-gray-700 leading-relaxed prose max-w-none mt-6 mb-8"></div>
+
+                <!-- 댓글 섹션 -->
+                <div class="border-t pt-6">
+                    <h4 class="text-xl font-semibold text-gray-700 mb-4">댓글</h4>
+                    <ul id="comment-list" class="space-y-4 mb-6">
+                        <!-- 댓글이 여기에 동적으로 추가됩니다. -->
+                    </ul>
+                    <!-- 댓글 작성 폼 -->
+                    <form id="comment-form">
+                        <div class="flex items-start space-x-3">
+                            <textarea id="comment-content-input" rows="2" class="flex-1 shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="댓글을 입력하세요..." required></textarea>
+                            <button type="submit" class="bg-indigo-500 hover:bg-indigo-600 text-white font-bold py-2 px-4 rounded-md transition duration-300">등록</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- 게시글 생성/수정 폼 -->
+            <div id="post-form-section" class="bg-white p-8 rounded-lg shadow-md" style="display: none;">
+                <h3 id="form-title" class="text-2xl font-bold text-gray-800 mb-6"></h3>
+                <form id="post-form">
+                    <input type="hidden" id="form-post-id">
+                    <div class="mb-4">
+                        <label for="form-title-input" class="block text-gray-700 text-sm font-bold mb-2">제목</label>
+                        <input type="text" id="form-title-input" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                    </div>
+                    <div class="mb-6">
+                        <label for="form-content-input" class="block text-gray-700 text-sm font-bold mb-2">내용</label>
+                        <textarea id="form-content-input" rows="10" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500" required></textarea>
+                    </div>
+                    <div class="flex items-center justify-end space-x-2">
+                        <button type="button" id="cancel-btn" class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-md transition duration-300">취소</button>
+                        <button type="submit" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-md transition duration-300">저장</button>
+                    </div>
+                </form>
+            </div>
+        </section>
+    </main>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const API_BASE_URL = '/api/posts';
+
+        // --- DOM 요소 ---
+        const postList = document.getElementById('post-list');
+        const welcomeMessage = document.getElementById('welcome-message');
+        const postDetailSection = document.getElementById('post-detail-section');
+        const postFormSection = document.getElementById('post-form-section');
+
+        // 상세 보기 요소
+        const postTitle = document.getElementById('post-title');
+        const postMeta = document.getElementById('post-meta');
+        const postContent = document.getElementById('post-content');
+
+        // 댓글 요소
+        const commentList = document.getElementById('comment-list');
+        const commentForm = document.getElementById('comment-form');
+        const commentContentInput = document.getElementById('comment-content-input');
+
+        // 폼 요소
+        const postForm = document.getElementById('post-form');
+        const formTitle = document.getElementById('form-title');
+        const formPostId = document.getElementById('form-post-id');
+        const formTitleInput = document.getElementById('form-title-input');
+        const formContentInput = document.getElementById('form-content-input');
+
+        // 버튼 요소
+        const newPostBtn = document.getElementById('new-post-btn');
+        const editPostBtn = document.getElementById('edit-post-btn');
+        const deletePostBtn = document.getElementById('delete-post-btn');
+        const cancelBtn = document.getElementById('cancel-btn');
+
+        let currentPostId = null;
+
+        // --- 유틸리티 함수 ---
+        const showView = (view) => {
+            welcomeMessage.style.display = 'none';
+            postDetailSection.style.display = 'none';
+            postFormSection.style.display = 'none';
+            if (view) view.style.display = 'block';
+        };
+
+        // --- API 호출 함수 ---
+
+        // 모든 게시글 조회
+        const fetchPosts = async () => {
+            try {
+                const response = await fetch(API_BASE_URL);
+                if (!response.ok) throw new Error('게시글 목록을 불러오는데 실패했습니다.');
+                const posts = await response.json();
+
+                postList.innerHTML = '';
+                if (posts.length === 0) {
+                    postList.innerHTML = '<li class="text-gray-500">게시글이 없습니다.</li>';
+                } else {
+                    posts.forEach(post => {
+                        const li = document.createElement('li');
+                        li.className = 'post-item p-3 rounded-md cursor-pointer transition duration-300 border border-transparent hover:border-blue-300';
+                        li.dataset.postId = post.postId;
+                        li.textContent = post.title;
+                        postList.appendChild(li);
+                    });
+                }
+            } catch (error) {
+                console.error(error);
+                postList.innerHTML = `<li class="text-red-500">${error.message}</li>`;
+            }
+        };
+
+        // 특정 게시글 상세 조회
+        const fetchPostDetails = async (postId) => {
+            try {
+                const response = await fetch(`${API_BASE_URL}/${postId}`);
+                if (!response.ok) throw new Error('게시글을 불러오는데 실패했습니다.');
+
+                const post = await response.json();
+                currentPostId = post.postId;
+
+                postTitle.textContent = post.title;
+                postContent.innerHTML = post.content.replace(/\n/g, '<br>'); // 개행 문자를 <br>로 변환
+                postMeta.textContent = `게시글 ID: ${post.postId} | 최종 수정: ${new Date(post.updateAt).toLocaleString()}`;
+
+                commentList.innerHTML = '';
+                if(post.commentList && post.commentList.length > 0) {
+                    post.commentList.forEach(comment => {
+                        const li = document.createElement('li');
+                        li.className = 'bg-gray-50 p-3 rounded-md flex justify-between items-start';
+                        li.innerHTML = `
+                            <div>
+                                <p class="text-gray-700">${comment.commentContent}</p>
+                                <p class="text-xs text-gray-400 mt-1">최종 수정: ${new Date(comment.commentUpdatedAt).toLocaleString()}</p>
+                            </div>
+                            <button data-comment-id="${comment.commentId}" class="delete-comment-btn text-red-500 hover:text-red-700 text-xs font-semibold ml-4">삭제</button>
+                        `;
+                        commentList.appendChild(li);
+                    });
+                } else {
+                    commentList.innerHTML = '<li class="text-gray-500">작성된 댓글이 없습니다.</li>';
+                }
+
+                showView(postDetailSection);
+            } catch (error) {
+                console.error(error);
+                alert(error.message);
+            }
+        };
+
+        // 게시글 생성/수정
+        const savePost = async (postData) => {
+            const isUpdating = !!postData.postId;
+            const url = isUpdating ? `${API_BASE_URL}/${postData.postId}` : API_BASE_URL;
+            const method = isUpdating ? 'PUT' : 'POST';
+
+            try {
+                const response = await fetch(url, {
+                    method: method,
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(postData),
+                });
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`저장에 실패했습니다: ${errorText}`);
+                }
+
+                const savedPost = await response.json();
+                await fetchPosts(); // 목록 갱신
+                fetchPostDetails(savedPost.postId); // 저장된 글로 이동
+
+            } catch (error) {
+                console.error(error);
+                alert(error.message);
+            }
+        };
+
+        // 게시글 삭제
+        const deletePost = async (postId) => {
+            if (!confirm('정말로 이 게시글을 삭제하시겠습니까?')) return;
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/${postId}`, { method: 'DELETE' });
+                if (!response.ok) throw new Error('삭제에 실패했습니다.');
+
+                currentPostId = null;
+                await fetchPosts();
+                showView(welcomeMessage);
+            } catch (error) {
+                console.error(error);
+                alert(error.message);
+            }
+        };
+
+        // 댓글 생성
+        const createComment = async (postId, commentContent) => {
+            try {
+                const response = await fetch(`${API_BASE_URL}/${postId}/comments`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ commentContent: commentContent })
+                });
+                if (!response.ok) throw new Error('댓글 작성에 실패했습니다.');
+
+                commentForm.reset();
+                await fetchPostDetails(postId); // 댓글 목록 새로고침
+            } catch (error) {
+                console.error(error);
+                alert(error.message);
+            }
+        };
+
+        // 댓글 삭제
+        const deleteComment = async (postId, commentId) => {
+            if (!confirm('정말로 이 댓글을 삭제하시겠습니까?')) return;
+            try {
+                const response = await fetch(`${API_BASE_URL}/${postId}/comments/${commentId}`, {
+                    method: 'DELETE'
+                });
+                if (!response.ok) throw new Error('댓글 삭제에 실패했습니다.');
+
+                await fetchPostDetails(postId); // 댓글 목록 새로고침
+            } catch (error) {
+                console.error(error);
+                alert(error.message);
+            }
+        };
+
+
+        // --- 이벤트 리스너 ---
+
+        // 게시글 목록 클릭 (이벤트 위임)
+        postList.addEventListener('click', (e) => {
+            if (e.target && e.target.matches('li.post-item')) {
+                const postId = e.target.dataset.postId;
+                fetchPostDetails(postId);
+            }
+        });
+
+        // '새 글 작성' 버튼 클릭
+        newPostBtn.addEventListener('click', () => {
+            formTitle.textContent = "새 글 작성";
+            postForm.reset();
+            formPostId.value = '';
+            showView(postFormSection);
+        });
+
+        // '수정' 버튼 클릭
+        editPostBtn.addEventListener('click', () => {
+            formTitle.textContent = "게시글 수정";
+            formPostId.value = currentPostId;
+            formTitleInput.value = postTitle.textContent;
+            formContentInput.value = postContent.innerHTML.replace(/<br\s*\/?>/gi, '\n');
+            showView(postFormSection);
+        });
+
+        // '삭제' 버튼 클릭
+        deletePostBtn.addEventListener('click', () => {
+            if (currentPostId) deletePost(currentPostId);
+        });
+
+        // 폼 '저장' 버튼 클릭
+        postForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const postData = {
+                postId: formPostId.value || null,
+                title: formTitleInput.value,
+                content: formContentInput.value,
+            };
+            savePost(postData);
+        });
+
+        // '취소' 버튼 클릭
+        cancelBtn.addEventListener('click', () => {
+            if (currentPostId) {
+                fetchPostDetails(currentPostId);
+            } else {
+                showView(welcomeMessage);
+            }
+        });
+
+        // 댓글 폼 제출
+        commentForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const content = commentContentInput.value.trim();
+            if (content && currentPostId) {
+                createComment(currentPostId, content);
+            }
+        });
+
+        // 댓글 목록 클릭 (삭제 버튼 이벤트 위임)
+        commentList.addEventListener('click', (e) => {
+            if (e.target && e.target.matches('button.delete-comment-btn')) {
+                const commentId = e.target.dataset.commentId;
+                if (currentPostId && commentId) {
+                    deleteComment(currentPostId, commentId);
+                }
+            }
+        });
+
+        // 초기 게시글 목록 로드
+        fetchPosts();
+    });
+</script>
+</body>
+</html>

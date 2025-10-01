@@ -48,6 +48,20 @@ DTO 수정: CommentDTO의 Long replyCommentId를 -> List<ReplyCommentDTO> replyC
 
 25-10-1
 ReplyComment.java Entity 생성
+Repository,entity,dto,Datainit완료
+controller,service 남음
+controller
+get-개별 post조회할때 같이 해야함->/posts/{postId} getmapping에 추가
+    gemini에 물어보니 N+1문제가 발생하기는 하지만 replyCommentList를 가져오는 코드를 작성하지 않아도 알아서 조회됨->나중에 생각해보고 해결
+post-/posts/{postId}/comments/{commentId}/replyComments/{replyCommentId}
+PUT-post와 똑같은 엔드포인트
+Delete-Post와 똑같은 요청
+    delete의 comment entity측 replyComment 제거는 orphanRemoval로 해결
+
+백엔드 대댓글 기능 전체 완료
+-수정 필요한 것:
+    1.프론트 댓글과 대댓글 수정 가능하게
+    2.글,댓글,대댓글 수정하지 않았음에도 최종 시간이 업데이트 되는 문제
 
 
 

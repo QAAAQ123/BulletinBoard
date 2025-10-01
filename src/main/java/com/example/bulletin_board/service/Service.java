@@ -1,5 +1,6 @@
 package com.example.bulletin_board.service;
 
+import com.example.bulletin_board.common.CurrentTime;
 import com.example.bulletin_board.dto.CommentDto;
 import com.example.bulletin_board.dto.PostDto;
 import com.example.bulletin_board.entity.Comment;
@@ -37,6 +38,7 @@ public class Service {
 
     public PostDto createPost(PostDto postDto) {
         Post post = postDto.toEntity();
+        post.setUpdateAt(CurrentTime.getCurrentTime());
         Post createTarget= postRepository.save(post);
         log.info("created post\ntitle: "+post.getTitle()+"\ncontent: "+post.getContent()+"\nupdated at: "+post.getUpdateAt());
         return createTarget.toDto();
@@ -59,6 +61,7 @@ public class Service {
         postRepository.deleteById(postId);
     }
 
+    //25-10-1 reply comment list 추가
     public PostDto showPost(Long postId) {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new EntityNotFoundException("Entity not found with postId"));
@@ -87,6 +90,7 @@ public class Service {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new EntityNotFoundException("entity not found"));
         Comment comment = commentDto.toEntity(post);
+        comment.setCommentUpdatedAt(CurrentTime.getCurrentTime());
         log.info("created comment\ncontent: {}\nupdated at: {}",comment.getCommentContent(),comment.getCommentUpdatedAt());
         Comment createdComment = commentRepository.save(comment);
         return createdComment.toDto();

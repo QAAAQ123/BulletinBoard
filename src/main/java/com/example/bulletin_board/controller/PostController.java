@@ -32,9 +32,10 @@ public class PostController {
     }
 
     //Show post and commentsg
+    //25-10-1 로그에 대댓글 추가
     @GetMapping("/posts/{postId}")
     public ResponseEntity<PostDto> showPost(@PathVariable Long postId){
-        log.info("post and comments get request");
+        log.info("post and comments and reply comments get request");
         return ResponseEntity.status(HttpStatus.OK)
                 .body(service.showPost(postId));
     }

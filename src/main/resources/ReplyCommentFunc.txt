@@ -1,0 +1,53 @@
+25-9-30
+대댓글 기능 추가
+
+기능
+1. 댓글당 대댓글 한개만 가능
+2. 댓글당 대댓글 여러개 가능
+
+위의 기능을 구현하기 위해서는 Entity와 DB 변경 필수
+방법1. comment 테이블에 reply_commnet_id와 reply_comment_content 추가
+    reply가 없을때 commnet테이블에 nullable이 너무 많아짐->리소스 낭비??/복잡성 증가할 듯
+방법2. reply_comment를 아예 새롭게 만들어서 여기에 comment_id를 join
+    방법2가 구현하기 쉬울 것 같음
+
+테이블 예상 변경
+reply_comment 테이블 스키마
+reply_comment(reply_comment_id(PK),reply_comment_content,reply_comment_update_at,comment_id(FK))
+comment(comment_id(PK),post_id(FK),comment_content,comment_update_at)
+
+JpaRepository 예상 변경점
+ReplyComment interface 추가
+
+엔티티 예상 변경점
+ReplyComment Entity 추가
+comment에 @JoinColumn(name="reply_comment_id")List<ReplyComment> replyCommentList 추가
+comment의 replyCommentList는 nullable해야함
+
+DTO 예상 변경점
+reply_comment DTO추가
+comment에 replyCommentList 추가
+
+Controller 예상 변경점
+replyCommentController를 restController로 만들고 CURD 엔드포인트를 생성해야함
+default Endpoint는 '/api/posts/{postId}/comments/{commentId}'
+위 default에 /replyComments (+{replyCommentId})
+
+Service 예상 변경점
+신규 ReplyCommentService 생성
+기존 service에 개별 postId를 Read할때만 replyCommentDTO를 추가
+
+++제미나이 추가++
+현재 테이블은 1:1관계임 1:N관계로 수정해야함
+1:1로 하면 댓글 하나당 대댓글 1개밖에 못씀
+Entity 수정: joinColum에서 -> replyComment를 replyComment Entity에서 @ManyToOne으로(댓글을 보여줄때 대댓글은 무조건 보여야 함으로 Lazy전략을 사용하면 안됨)
+DTO 수정: CommentDTO의 Long replyCommentId를 -> List<ReplyCommentDTO> replyCommentDTOList로 변경
+네, 그렇게 생각하시는 것이 당연합니다. EAGER로 설정하면 댓글을 조회할 때 대댓글이 항상 함께 조회되는 것이 맞습니다. 기능적으로는 원하시는 바를 정확히 구현할 수 있습니다.
+하지만 "댓글을 조회할 때"가 어떤 상황인지에 따라 EAGER 전략은 심각한 성능 문제를 일으킬 수 있어 업계 표준에서는 거의 사용하지 않습니다.
+
+
+25-10-1
+ReplyComment.java Entity 생성
+
+
+

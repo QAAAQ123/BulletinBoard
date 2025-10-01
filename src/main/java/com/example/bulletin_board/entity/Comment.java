@@ -11,6 +11,9 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Entity
 @ToString(exclude = {"post"})
 @AllArgsConstructor
@@ -20,6 +23,8 @@ import lombok.ToString;
 @Table(name = "comment")
 @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "commentId")
 public class Comment {
+    //comment(comment_id(PK),post_id(FK),comment_content,comment_update_at)
+
     @Id
     @Column(name = "comment_id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -29,6 +34,10 @@ public class Comment {
     @JoinColumn(name = "post_id")
     @JsonBackReference // post 필드 직렬화 제외
     private Post post;
+
+    @OneToMany(mappedBy = "comment",fetch = FetchType.LAZY)
+    //null허용하지 않고 초기화 할때 빈 리스트로
+    private List<ReplyComment> replyCommentList = new ArrayList<>();
 
     @Column(name = "comment_content")
     private String commentContent;
@@ -41,7 +50,7 @@ public class Comment {
     }
 
     public CommentDto toDto() {
-        return new CommentDto(this.commentId,this.post.getPostId(),this.commentContent,this.commentUpdatedAt);
+        return new CommentDto(this.commentId,this.post.getPostId(),this.commentContent,this.commentUpdatedAt,this.replyCommentList);
     }
 
 }

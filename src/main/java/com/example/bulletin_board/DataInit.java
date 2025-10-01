@@ -2,6 +2,7 @@ package com.example.bulletin_board;
 
 import com.example.bulletin_board.entity.Comment;
 import com.example.bulletin_board.entity.Post;
+import com.example.bulletin_board.entity.ReplyComment;
 import com.example.bulletin_board.repository.CommentRepository;
 import com.example.bulletin_board.repository.PostRepository;
 import org.springframework.boot.CommandLineRunner;
@@ -10,6 +11,7 @@ import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.List;
 
 @Component
 public class DataInit {
@@ -23,10 +25,16 @@ public class DataInit {
             Post p1 = new Post(null, "글 제목 1", "내용 1", nowStr,new ArrayList<>());
             Post p2 = new Post(null, "글 제목 2", "내용 2", nowStr,new ArrayList<>());
 
-            Comment c1 = new Comment(null, p1, "댓글 1", nowStr);
-            Comment c2 = new Comment(null, p1, "댓글 2", nowStr);
-            Comment c3 = new Comment(null, p2, "댓글 3", nowStr);
-            Comment c4 = new Comment(null, p2, "댓글 4", nowStr);
+
+            ReplyComment r1 = new ReplyComment(null,null,"대댓글1",nowStr);
+            ReplyComment r2 = new ReplyComment(null,null,"대댓글2",nowStr);
+
+            Comment c1 = new Comment(null, p1, List.of(r1,r2),"댓글 1", nowStr);
+            Comment c2 = new Comment(null, p1,List.of(),"댓글 2", nowStr);
+            Comment c3 = new Comment(null, p2,List.of(), "댓글 3", nowStr);
+            Comment c4 = new Comment(null, p2,List.of(),"댓글 4", nowStr);
+
+
 
             Post post1 = postRepository.save(p1);
             Post post2 = postRepository.save(p2);

@@ -5,6 +5,7 @@ import com.example.bulletin_board.entity.Post;
 import com.example.bulletin_board.entity.ReplyComment;
 import com.example.bulletin_board.repository.CommentRepository;
 import com.example.bulletin_board.repository.PostRepository;
+import com.example.bulletin_board.repository.ReplyCommentRepository;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
@@ -17,7 +18,7 @@ import java.util.List;
 public class DataInit {
 
     @Bean
-    public CommandLineRunner initData(PostRepository postRepository, CommentRepository commentRepository) {
+    public CommandLineRunner initData(PostRepository postRepository, CommentRepository commentRepository,ReplyCommentRepository replyCommentRepository) {
         return args -> {
             LocalDateTime now = LocalDateTime.now();
             String nowStr = now.toString();
@@ -33,6 +34,9 @@ public class DataInit {
             Comment c2 = new Comment(null, p1,List.of(),"댓글 2", nowStr);
             Comment c3 = new Comment(null, p2,List.of(), "댓글 3", nowStr);
             Comment c4 = new Comment(null, p2,List.of(),"댓글 4", nowStr);
+
+            r1.setComment(c1);
+            r2.setComment(c1);
 
 
 
@@ -51,6 +55,9 @@ public class DataInit {
 
             postRepository.save(post1);
             postRepository.save(post2);
+
+            replyCommentRepository.save(r1);
+            replyCommentRepository.save(r2);
         };
     }
 }

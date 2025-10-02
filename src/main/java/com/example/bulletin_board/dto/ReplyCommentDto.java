@@ -14,4 +14,8 @@ public class ReplyCommentDto {
     public ReplyComment toEntity() {
         return new ReplyComment(this.replyCommentId,new Comment(),this.replyCommentContent,this.replyCommentUpdateAt);
     }
+
+    public ReplyComment toEntity(Comment comment){
+        return new ReplyComment(this.replyCommentId,comment,this.replyCommentContent,this.replyCommentUpdateAt);
+    }
 }

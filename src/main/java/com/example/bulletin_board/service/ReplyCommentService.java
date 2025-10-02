@@ -35,8 +35,10 @@ public class ReplyCommentService {
 
     public ReplyCommentDto updateReplyComment(Long postId, Long commentId, Long replyCommentId, ReplyCommentDto replyCommentDto) {
         ReplyComment updateTargetReplyCommentEntity = replyCommentRepository.findByIdOrElseThrow(replyCommentId);
-        updateTargetReplyCommentEntity.mergeReplyCommentEntity(replyCommentDto.toEntity());
+        Comment comment = updateTargetReplyCommentEntity.getComment();
+        updateTargetReplyCommentEntity.mergeReplyCommentEntity(replyCommentDto.toEntity(comment));
 
+        replyCommentRepository.save(updateTargetReplyCommentEntity);
         return updateTargetReplyCommentEntity.toDto();
     }
 

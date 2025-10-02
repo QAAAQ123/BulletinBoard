@@ -74,8 +74,6 @@ public class Service {
 
     public CommentDto updateComment(CommentDto commentDto, Long commentId) {
         log.info("requested comment content:{}, updated at:{}", commentDto.getCommentContent(), commentDto.getCommentUpdatedAt());
-        if (!commentDto.getCommentId().equals(commentId))
-            return null;
         Comment target = commentRepository.findById(commentId)
                 .orElseThrow(() -> new EntityNotFoundException("Entity not found"));
         Post post = target.getPost();

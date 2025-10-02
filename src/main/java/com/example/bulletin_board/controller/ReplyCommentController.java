@@ -37,7 +37,7 @@ public class ReplyCommentController {
             @PathVariable Long replyCommentId,@RequestBody ReplyCommentDto replyCommentDto) {
 
         log.info("reply comment put request(post id:{},comment id:{},reply comment id:{})",postId,commentId,replyCommentId);
-        return ResponseEntity.status(HttpStatus.CREATED)
+        return ResponseEntity.status(HttpStatus.OK)
                 .body(replyCommentService.updateReplyComment(postId,commentId,replyCommentId,replyCommentDto));
     }
 

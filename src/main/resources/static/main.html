@@ -8,13 +8,17 @@
     <style>
         /* 추가적인 커스텀 스타일 */
         .post-item:hover {
-            background-color: #f0f4f8; /* Light blue-gray on hover */
+            background-color: #f0f4f8;
         }
-        .form-section, .reply-form {
-            display: none; /* Initially hide form sections */
+        .form-section, .reply-form, .edit-form {
+            display: none;
         }
-        .active {
-            display: block !important;
+        /* editing 클래스가 적용된 요소의 직계 자식(>)에게만 스타일을 적용하여, 대댓글에 영향이 가지 않도록 수정 */
+        .editing > .view-mode {
+            display: none;
+        }
+        .editing > .edit-form {
+            display: block;
         }
     </style>
 </head>
@@ -33,7 +37,6 @@
                 <button id="new-post-btn" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-md transition duration-300">새 글 작성</button>
             </div>
             <ul id="post-list" class="space-y-2">
-                <!-- 게시글 목록이 여기에 동적으로 추가됩니다 -->
                 <li class="text-gray-500">게시글을 불러오는 중...</li>
             </ul>
         </section>
@@ -103,7 +106,7 @@
     document.addEventListener('DOMContentLoaded', () => {
         const API_BASE_URL = '/api/posts';
 
-        // --- DOM 요소 ---
+        // --- DOM Elements ---
         const postList = document.getElementById('post-list');
         const welcomeMessage = document.getElementById('welcome-message');
         const postDetailSection = document.getElementById('post-detail-section');
@@ -126,7 +129,7 @@
 
         let currentPostId = null;
 
-        // --- 유틸리티 함수 ---
+        // --- Utility Functions ---
         const showView = (view) => {
             welcomeMessage.style.display = 'none';
             postDetailSection.style.display = 'none';
@@ -134,8 +137,21 @@
             if (view) view.style.display = 'block';
         };
 
-        // --- API 호출 함수 ---
+        const getCurrentDateTime = () => {
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const day = String(now.getDate()).padStart(2, '0');
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const seconds = String(now.getSeconds()).padStart(2, '0');
+            const milliseconds = String(now.getMilliseconds()).padStart(3, '0');
+            // Java의 LocalDateTime.parse가 인식할 수 있는 ISO-8601 형식(YYYY-MM-DDTHH:mm:ss.ssssss)으로 반환합니다.
+            return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}.${milliseconds}000`;
+        };
 
+
+        // --- API Call Functions ---
         const fetchPosts = async () => {
             try {
                 const response = await fetch(API_BASE_URL);
@@ -144,8 +160,7 @@
                 postList.innerHTML = posts.length ? posts.map(post => `
                     <li class="post-item p-3 rounded-md cursor-pointer transition duration-300 border border-transparent hover:border-blue-300" data-post-id="${post.postId}">
                         ${post.title}
-                    </li>
-                `).join('') : '<li class="text-gray-500">게시글이 없습니다.</li>';
+                    </li>`).join('') : '<li class="text-gray-500">게시글이 없습니다.</li>';
             } catch (error) {
                 console.error(error);
                 postList.innerHTML = `<li class="text-red-500">${error.message}</li>`;
@@ -174,27 +189,49 @@
                         if (comment.replyCommentList && comment.replyCommentList.length > 0) {
                             repliesHtml = `<ul class="reply-list mt-4 space-y-3 pl-6 border-l-2 border-gray-200">` +
                                 comment.replyCommentList.map(reply => `
-                                    <li class="reply-item flex justify-between items-start">
-                                        <div>
-                                            <p class="text-gray-600 text-sm">${reply.replyCommentContent}</p>
-                                            <p class="text-xs text-gray-400 mt-1">${new Date(reply.replyCommentUpdateAt).toLocaleString()}</p>
+                                    <li class="reply-item" data-reply-id="${reply.replyCommentId}">
+                                        <div class="view-mode flex justify-between items-start">
+                                            <div>
+                                                <p class="text-gray-600 text-sm">${reply.replyCommentContent}</p>
+                                                <p class="text-xs text-gray-400 mt-1">${new Date(reply.replyCommentUpdateAt).toLocaleString()}</p>
+                                            </div>
+                                            <div class="flex items-center space-x-2">
+                                                <button class="edit-reply-btn text-gray-500 hover:text-gray-700 text-xs font-semibold">수정</button>
+                                                <button class="delete-reply-btn text-red-500 hover:text-red-700 text-xs font-semibold">삭제</button>
+                                            </div>
                                         </div>
-                                        <button data-reply-id="${reply.replyCommentId}" class="delete-reply-btn text-red-500 hover:text-red-700 text-xs font-semibold ml-4">삭제</button>
+                                        <form class="edit-form mt-2">
+                                            <textarea rows="2" class="edit-content-input flex-1 shadow-sm appearance-none border rounded w-full py-1 px-2 text-gray-700 text-sm leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500" required>${reply.replyCommentContent}</textarea>
+                                            <div class="flex justify-end space-x-2 mt-2">
+                                                <button type="button" class="cancel-edit-btn bg-gray-400 hover:bg-gray-500 text-white font-bold py-1 px-3 rounded-md text-xs transition">취소</button>
+                                                <button type="submit" class="save-edit-btn bg-green-500 hover:bg-green-600 text-white font-bold py-1 px-3 rounded-md text-xs transition">저장</button>
+                                            </div>
+                                        </form>
                                     </li>
                                 `).join('') + `</ul>`;
                         }
 
                         commentEl.innerHTML = `
-                            <div class="flex justify-between items-start">
-                                <div>
-                                    <p class="text-gray-800">${comment.commentContent}</p>
-                                    <p class="text-xs text-gray-500 mt-1">${new Date(comment.commentUpdatedAt).toLocaleString()}</p>
-                                </div>
-                                <div class="flex items-center space-x-3">
-                                    <button data-comment-id="${comment.commentId}" class="toggle-reply-form-btn text-blue-500 hover:text-blue-700 text-xs font-semibold">답글 달기</button>
-                                    <button data-comment-id="${comment.commentId}" class="delete-comment-btn text-red-500 hover:text-red-700 text-xs font-semibold">삭제</button>
+                            <div class="view-mode">
+                                <div class="flex justify-between items-start">
+                                    <div>
+                                        <p class="text-gray-800">${comment.commentContent}</p>
+                                        <p class="text-xs text-gray-500 mt-1">${new Date(comment.commentUpdatedAt).toLocaleString()}</p>
+                                    </div>
+                                    <div class="flex items-center space-x-3">
+                                        <button class="edit-comment-btn text-gray-500 hover:text-gray-700 text-xs font-semibold">수정</button>
+                                        <button class="toggle-reply-form-btn text-blue-500 hover:text-blue-700 text-xs font-semibold">답글</button>
+                                        <button class="delete-comment-btn text-red-500 hover:text-red-700 text-xs font-semibold">삭제</button>
+                                    </div>
                                 </div>
                             </div>
+                            <form class="edit-form mt-2">
+                                <textarea rows="2" class="edit-content-input flex-1 shadow-sm appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500" required>${comment.commentContent}</textarea>
+                                <div class="flex justify-end space-x-2 mt-2">
+                                    <button type="button" class="cancel-edit-btn bg-gray-400 hover:bg-gray-500 text-white font-bold py-1 px-3 rounded-md text-xs transition">취소</button>
+                                    <button type="submit" class="save-edit-btn bg-green-500 hover:bg-green-600 text-white font-bold py-1 px-3 rounded-md text-xs transition">저장</button>
+                                </div>
+                            </form>
                             ${repliesHtml}
                             <form class="reply-form mt-3" data-comment-id="${comment.commentId}">
                                 <div class="flex items-start space-x-2">
@@ -218,11 +255,9 @@
         const savePost = async (postData) => {
             const isUpdating = !!postData.postId;
             const url = isUpdating ? `${API_BASE_URL}/${postData.postId}` : API_BASE_URL;
-            const method = isUpdating ? 'PUT' : 'POST';
-
             try {
                 const response = await fetch(url, {
-                    method: method,
+                    method: isUpdating ? 'PUT' : 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(postData),
                 });
@@ -250,15 +285,17 @@
             }
         };
 
-        const createComment = async (postId, commentContent) => {
+        const createOrUpdateComment = async (postId, commentId, content) => {
+            const isUpdating = !!commentId;
+            const url = isUpdating ? `${API_BASE_URL}/${postId}/comments/${commentId}` : `${API_BASE_URL}/${postId}/comments`;
             try {
-                const response = await fetch(`${API_BASE_URL}/${postId}/comments`, {
-                    method: 'POST',
+                const response = await fetch(url, {
+                    method: isUpdating ? 'PUT' : 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ commentContent })
+                    body: JSON.stringify({ commentContent: content, commentUpdatedAt: getCurrentDateTime() })
                 });
-                if (!response.ok) throw new Error('댓글 작성 실패');
-                commentForm.reset();
+                if (!response.ok) throw new Error(`댓글 ${isUpdating ? '수정' : '작성'} 실패`);
+                if (!isUpdating) commentForm.reset();
                 await fetchPostDetails(postId);
             } catch (error) {
                 console.error(error);
@@ -278,14 +315,16 @@
             }
         };
 
-        const createReplyComment = async (postId, commentId, replyCommentContent) => {
+        const createOrUpdateReplyComment = async (postId, commentId, replyId, content) => {
+            const isUpdating = !!replyId;
+            const url = isUpdating ? `${API_BASE_URL}/${postId}/comments/${commentId}/replyComments/${replyId}` : `${API_BASE_URL}/${postId}/comments/${commentId}/replyComments`;
             try {
-                const response = await fetch(`${API_BASE_URL}/${postId}/comments/${commentId}/replyComments`, {
-                    method: 'POST',
+                const response = await fetch(url, {
+                    method: isUpdating ? 'PUT' : 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ replyCommentContent })
+                    body: JSON.stringify({ replyCommentContent: content, replyCommentUpdateAt: getCurrentDateTime() })
                 });
-                if (!response.ok) throw new Error('대댓글 작성 실패');
+                if (!response.ok) throw new Error(`대댓글 ${isUpdating ? '수정' : '작성'} 실패`);
                 await fetchPostDetails(postId);
             } catch (error) {
                 console.error(error);
@@ -296,9 +335,7 @@
         const deleteReplyComment = async (postId, commentId, replyCommentId) => {
              if (!confirm('정말로 이 대댓글을 삭제하시겠습니까?')) return;
             try {
-                const response = await fetch(`${API_BASE_URL}/${postId}/comments/${commentId}/replyComments/${replyCommentId}`, {
-                    method: 'DELETE'
-                });
+                const response = await fetch(`${API_BASE_URL}/${postId}/comments/${commentId}/replyComments/${replyCommentId}`, { method: 'DELETE' });
                 if (!response.ok) throw new Error('대댓글 삭제 실패');
                 await fetchPostDetails(postId);
             } catch (error) {
@@ -307,11 +344,9 @@
             }
         };
 
-        // --- 이벤트 리스너 ---
+        // --- Event Listeners ---
         postList.addEventListener('click', e => {
-            if (e.target.closest('.post-item')) {
-                fetchPostDetails(e.target.closest('.post-item').dataset.postId);
-            }
+            if (e.target.closest('.post-item')) fetchPostDetails(e.target.closest('.post-item').dataset.postId);
         });
 
         newPostBtn.addEventListener('click', () => {
@@ -329,69 +364,86 @@
             showView(postFormSection);
         });
 
-        deletePostBtn.addEventListener('click', () => {
-            if (currentPostId) deletePost(currentPostId);
-        });
+        deletePostBtn.addEventListener('click', () => { if (currentPostId) deletePost(currentPostId); });
 
         postForm.addEventListener('submit', e => {
             e.preventDefault();
-            savePost({
-                postId: formPostId.value || null,
-                title: formTitleInput.value,
-                content: formContentInput.value,
-            });
+            savePost({ postId: formPostId.value || null, title: formTitleInput.value, content: formContentInput.value });
         });
 
         cancelBtn.addEventListener('click', () => {
-            if (currentPostId) fetchPostDetails(currentPostId);
-            else showView(welcomeMessage);
+            if (currentPostId) fetchPostDetails(currentPostId); else showView(welcomeMessage);
         });
 
         commentForm.addEventListener('submit', e => {
             e.preventDefault();
             const content = commentContentInput.value.trim();
-            if (content && currentPostId) createComment(currentPostId, content);
+            if (content && currentPostId) createOrUpdateComment(currentPostId, null, content);
         });
 
         commentList.addEventListener('click', e => {
             const target = e.target;
+            const replyItem = target.closest('.reply-item');
             const commentItem = target.closest('.comment-item');
-            if (!commentItem) return;
-            const commentId = commentItem.dataset.commentId;
 
-            // 댓글 삭제
-            if (target.matches('.delete-comment-btn')) {
-                deleteComment(currentPostId, commentId);
-            }
-            // 답글 폼 토글
-            else if (target.matches('.toggle-reply-form-btn')) {
-                const replyForm = commentItem.querySelector('.reply-form');
-                if (replyForm) replyForm.style.display = replyForm.style.display === 'block' ? 'none' : 'block';
-            }
-            // 대댓글 삭제
-            else if(target.matches('.delete-reply-btn')) {
-                const replyId = target.dataset.replyId;
-                deleteReplyComment(currentPostId, commentId, replyId);
-            }
-        });
+            // 대댓글(Reply) 관련 이벤트를 우선적으로 처리합니다.
+            if (replyItem) {
+                const commentId = commentItem.dataset.commentId;
+                const replyId = replyItem.dataset.replyId;
 
-        commentList.addEventListener('submit', e => {
-            // 대댓글 작성
-            if(e.target.matches('.reply-form')) {
-                e.preventDefault();
-                const commentId = e.target.dataset.commentId;
-                const replyContentInput = e.target.querySelector('.reply-content-input');
-                const content = replyContentInput.value.trim();
-                if (content && currentPostId && commentId) {
-                    createReplyComment(currentPostId, commentId, content);
+                if (target.matches('.edit-reply-btn')) {
+                    replyItem.classList.add('editing');
+                } else if (target.matches('.cancel-edit-btn')) {
+                    replyItem.classList.remove('editing');
+                } else if (target.matches('.delete-reply-btn')) {
+                    deleteReplyComment(currentPostId, commentId, replyId);
+                }
+            }
+            // 대댓글 이벤트가 아닐 경우에만 댓글(Comment) 관련 이벤트를 처리합니다.
+            else if (commentItem) {
+                const commentId = commentItem.dataset.commentId;
+
+                if (target.matches('.edit-comment-btn')) {
+                    commentItem.classList.add('editing');
+                } else if (target.matches('.cancel-edit-btn')) {
+                    commentItem.classList.remove('editing');
+                } else if (target.matches('.delete-comment-btn')) {
+                    deleteComment(currentPostId, commentId);
+                } else if (target.matches('.toggle-reply-form-btn')) {
+                    const replyForm = commentItem.querySelector('.reply-form');
+                    if (replyForm) replyForm.style.display = replyForm.style.display === 'block' ? 'none' : 'block';
                 }
             }
         });
 
-        // 초기화
+        commentList.addEventListener('submit', e => {
+            e.preventDefault();
+            const target = e.target;
+            const commentItem = target.closest('.comment-item');
+            const replyItem = target.closest('.reply-item');
+
+            if (target.matches('.reply-form')) { // 대댓글 작성
+                const commentId = target.dataset.commentId;
+                const content = target.querySelector('.reply-content-input').value.trim();
+                if (content) createOrUpdateReplyComment(currentPostId, commentId, null, content);
+            } else if (target.matches('.edit-form')) { // 수정 저장
+                const content = target.querySelector('.edit-content-input').value.trim();
+                if (content && commentItem && !replyItem) { // 댓글 수정
+                    const commentId = commentItem.dataset.commentId;
+                    createOrUpdateComment(currentPostId, commentId, content);
+                } else if (content && commentItem && replyItem) { // 대댓글 수정
+                    const commentId = commentItem.dataset.commentId;
+                    const replyId = replyItem.dataset.replyId;
+                    createOrUpdateReplyComment(currentPostId, commentId, replyId, content);
+                }
+            }
+        });
+
         fetchPosts();
     });
 </script>
 </body>
 </html>
+
+
 

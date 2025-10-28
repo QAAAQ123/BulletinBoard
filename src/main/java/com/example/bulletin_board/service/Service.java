@@ -37,6 +37,12 @@ public class Service {
     }
 
     public PostDto createPost(PostDto postDto) {
+        if(postDto == null) //예외 처리
+            throw new IllegalArgumentException("PostDto는 null일 수 없습니다");
+
+        if(postDto.getTitle() == null || postDto.getTitle().trim().isEmpty()) //예외 처리
+            throw new IllegalArgumentException("게시글 제목은 필수 입니다.");
+
         Post post = postDto.toEntity();
         post.setUpdateAt(CurrentTime.getCurrentTime());
         Post createTarget= postRepository.save(post);
@@ -45,9 +51,11 @@ public class Service {
     }
 
     public PostDto updatePost(PostDto postDto,Long postId) {
+        if(postDto == null) //예외 처리
+            throw new IllegalArgumentException("PostDto는 null일 수 없습니다");
         Post post = postDto.toEntity();
-        if(!post.getPostId().equals(postId))
-            return null;
+        if(!post.getPostId().equals(postId))//예외처리
+            throw new IllegalArgumentException("요청 ID(" + postId + ")와 본문 ID(" + post.getPostId() + ")가 일치하지 않습니다.");
         Post updateTarget = postRepository.findById(postId)
                 .orElseThrow(() -> new EntityNotFoundException("Entity not found with postId"));
         updateTarget.mergeData(post);
@@ -57,6 +65,9 @@ public class Service {
     }
 
     public void deletePost(Long postId) {
+        Post post = postRepository.findById(postId) //예외 처리
+                .orElseThrow(() -> new EntityNotFoundException("삭제할 게시글을 찾을 수 없습니다)"));
+
         log.info("delete post (postId:{})",postId);
         postRepository.deleteById(postId);
     }
@@ -73,6 +84,11 @@ public class Service {
     }
 
     public CommentDto updateComment(CommentDto commentDto, Long commentId) {
+        if(commentDto == null)//예외 처리
+            throw new IllegalArgumentException("CommentDto는 null일 수 없습니다.");
+
+        if(commentDto.getCommentContent() == null || commentDto.getCommentContent().trim().isEmpty())//예외 처리
+            throw new IllegalArgumentException("댓글 내용은 필수입니다.");
         log.info("requested comment content:{}, updated at:{}", commentDto.getCommentContent(), commentDto.getCommentUpdatedAt());
         Comment target = commentRepository.findById(commentId)
                 .orElseThrow(() -> new EntityNotFoundException("Entity not found"));
@@ -85,6 +101,12 @@ public class Service {
     }
 
     public CommentDto createComment(CommentDto commentDto,Long postId){
+        if(commentDto == null)//예외 처리
+            throw new IllegalArgumentException("CommentDto는 null일 수 없습니다.");
+
+        if(commentDto.getCommentContent() == null || commentDto.getCommentContent().trim().isEmpty())//예외 처리
+            throw new IllegalArgumentException("댓글 내용은 필수입니다.");
+
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new EntityNotFoundException("entity not found"));
         Comment comment = commentDto.toEntity(post);
@@ -94,8 +116,10 @@ public class Service {
         return createdComment.toDto();
     }
 
-    public void deleteComment(Long commnetId){
-        commentRepository.deleteById(commnetId);
+    public void deleteComment(Long commentId){
+        Comment comment = commentRepository.findByIdOrElseThrow(commentId);
+
+        commentRepository.deleteById(commentId);
     }
 
 }

@@ -17,4 +17,21 @@ security configuration
 permit all -> 전체 글 확인(1)/로그인/회원가입
 hasAnyRole("USER") -> 2,3,4,5,6,7,8,9,10,11/로그아웃
 anyRequest -> authenticated로 설정
+------------------------------------------------------------------------------------------------------------------------------
+2025-10-31
+security configuration
+permit all -> 전체 글 확인(1)/로그인/회원가입 -> "/","/api/posts","/api/login","/api/join"
+hasAnyRole("USER") -> 2,3,4,5,6,7,8,9,10,11/로그아웃 -> "/api/**"
+anyRequest -> authenticated로 설정
+
+++ 개발 단계이기 때문에 csrf 꺼놓음 -> 배포할거면 csrf enable로 바꾸고 html도 수정해야함
+++ bCryptPasswordEncoder 암호화 메소드 추가하고 빈에 등록함
+++ gemini로 logout 구성 전체 작성함
+++ default id,pw user,1234로 설정/나중에 defualt 사용자 삭제해야함
+실행하고 user,1234로 로그인 하면 정상 로그인 확인(bCryptPasswordEncoder꺼놓은 상태)
+
+해야 할 것
+1. controller,service,entity,dto,repository 등에 user 기능 추가(bCryptPasswordEncoder 고려해서)
+2. 추가 완료후 정상동작하는지 확인
+3. 정상 동작하면 default user 삭제
 
